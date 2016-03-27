@@ -16,27 +16,21 @@ Read about it online.
 """
 
 import os
+import time
+import datetime
+from flask import session
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
+global name
+name = ''
+global s_item
 
+global s_price
 
-#
-# The following uses the sqlite3 database test.db -- you can use this for debugging purposes
-# However for the project you will need to connect to your Part 2 database in order to use the
-# data
-#
-# XXX: The URI should be in the format of: 
-#
-#     postgresql://USER:PASSWORD@w4111db.eastus.cloudapp.azure.com/username
-#
-# For example, if you had username ewu2493, password foobar, then the following line would be:
-#
-#     DATABASEURI = "postgresql://ewu2493:foobar@w4111db.eastus.cloudapp.azure.com/ewu2493"
-#
 DATABASEURI = "postgresql://xw2400:BLTJHA@w4111db.eastus.cloudapp.azure.com/xw2400"
 
 
@@ -100,105 +94,745 @@ def teardown_request(exception):
   except Exception as e:
     pass
 
-
-#
-# @app.route is a decorator around index() that means:
-#   run index() whenever the user tries to access the "/" path using a GET request
-#
-# If you wanted the user to go to e.g., localhost:8111/foobar/ with POST or GET then you could use
-#
-#       @app.route("/foobar/", methods=["POST", "GET"])
-#
-# PROTIP: (the trailing / in the path is important)
-# 
-# see for routing: http://flask.pocoo.org/docs/0.10/quickstart/#routing
-# see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
-#
 @app.route('/')
 def index():
-  """
-  request is a special object that Flask provides to access web request information:
-
-  request.method:   "GET" or "POST"
-  request.form:     if the browser submitted a form, this contains the data in the form
-  request.args:     dictionary of URL arguments e.g., {a:1, b:2} for http://localhost?a=1&b=2
-
-  See its API: http://flask.pocoo.org/docs/0.10/api/#incoming-request-data
-  """
-
-  # DEBUG: this is debugging code to see what request looks like
-  print request.args
-
-
-  #
-  # example of a database query
-  #
-  cursor = g.conn.execute("SELECT name FROM test")
-  names = []
-  for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
-  cursor.close()
-
-  #
-  # Flask uses Jinja templates, which is an extension to HTML where you can
-  # pass data to a template and dynamically generate HTML based on the data
-  # (you can think of it as simple PHP)
-  # documentation: https://realpython.com/blog/python/primer-on-jinja-templating/
-  #
-  # You can see an example template in templates/index.html
-  #
-  # context are the variables that are passed to the template.
-  # for example, "data" key in the context variable defined below will be 
-  # accessible as a variable in index.html:
-  #
-  #     # will print: [u'grace hopper', u'alan turing', u'ada lovelace']
-  #     <div>{{data}}</div>
-  #     
-  #     # creates a <div> tag for each element in data
-  #     # will print: 
-  #     #
-  #     #   <div>grace hopper</div>
-  #     #   <div>alan turing</div>
-  #     #   <div>ada lovelace</div>
-  #     #
-  #     {% for n in data %}
-  #     <div>{{n}}</div>
-  #     {% endfor %}
-  #
-  context = dict(data = names)
-
-
-  #
-  # render_template looks in the templates/ folder for files.
-  # for example, the below file reads template/index.html
-  #
+  context =dict (data = name)
   return render_template("index.html", **context)
 
-#
-# This is an example of a different path.  You can see it at
-# 
-#     localhost:8111/another
-#
-# notice that the functio name is another() rather than index()
-# the functions for each app.route needs to have different names
-#
+@app.route('/shoes1')
+def shoes1():
+  global s_item
+  global s_price
+  temp = []
+  s_item = 1
+  cursor = g.conn.execute("SELECT s.color, s.size, s.price, l.sale_price, l.starting_date, l.ending_date, b.brand_name, b.rating, t.type_name FROM shoes s, brands b, made_from m, types_belong_to t, sales_addto l where s.item_id = '1' and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id and s.item_id = l.item_id")
+  details = []
+  for result in cursor:
+    temp.append(result['price'])
+    details.append('User: ')
+    try:
+      details.append(name)
+    except:
+      pass
+    details.append('Color: ')
+    details.append(result['color'])
+    details.append('Size: ')
+    details.append(result['size'])
+    details.append('Regular Price: ')
+    details.append(result['price'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('Brand: ')
+    details.append(result['brand_name'])
+    details.append('Rating: ')
+    details.append(result['rating'])
+    details.append('Type: ')
+    details.append(result['type_name'])
+  cursor.close()
+  s_price = temp[0]
+
+  context = dict(data = details)
+  return render_template("shoes1.html", **context)
+
+@app.route('/shoes2')
+def shoes2():
+  global s_item
+  global s_price
+  temp = []
+  s_item = 2
+  cursor = g.conn.execute("SELECT s.color, s.size, s.price, l.sale_price, l.starting_date, l.ending_date, b.brand_name, b.rating, t.type_name FROM shoes s, brands b, made_from m, types_belong_to t, sales_addto l where s.item_id = '2' and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id and s.item_id = l.item_id")
+  details = []
+  for result in cursor:
+    temp.append(result['price'])
+    details.append('User: ')
+    try:
+      details.append(name)
+    except:
+      pass
+    details.append('Color: ')
+    details.append(result['color'])
+    details.append('Size: ')
+    details.append(result['size'])
+    details.append('Regular Price: ')
+    details.append(result['price'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('Brand: ')
+    details.append(result['brand_name'])
+    details.append('Rating: ')
+    details.append(result['rating'])
+    details.append('Type: ')
+    details.append(result['type_name'])
+  cursor.close()
+  s_price = temp[0]
+  context = dict(data = details)
+  return render_template("shoes2.html", **context)
+
+@app.route('/shoes3')
+def shoes3():
+  global s_item
+  global s_price
+  temp = []
+  s_item = 3
+  cursor = g.conn.execute("SELECT s.color, s.size, s.price, l.sale_price, l.starting_date, l.ending_date, b.brand_name, b.rating, t.type_name FROM shoes s, brands b, made_from m, types_belong_to t, sales_addto l where s.item_id = '3' and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id and s.item_id = l.item_id")
+  details = []
+  for result in cursor:
+    temp.append(result['price'])
+    details.append('User: ')
+    try:
+      details.append(name)
+    except:
+      pass
+    details.append('Color: ')
+    details.append(result['color'])
+    details.append('Size: ')
+    details.append(result['size'])
+    details.append('Regular Price: ')
+    details.append(result['price'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('Brand: ')
+    details.append(result['brand_name'])
+    details.append('Rating: ')
+    details.append(result['rating'])
+    details.append('Type: ')
+    details.append(result['type_name'])
+  cursor.close()
+  s_price = temp[0]
+  context = dict(data = details)
+  return render_template("shoes3.html", **context)
+
+@app.route('/shoes4')
+def shoes4():
+  global s_item
+  global s_price
+  temp = []
+  s_item = 4
+  cursor = g.conn.execute("SELECT s.color, s.size, s.price, l.sale_price, l.starting_date, l.ending_date, b.brand_name, b.rating, t.type_name FROM shoes s, brands b, made_from m, types_belong_to t, sales_addto l where s.item_id = '4' and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id and s.item_id = l.item_id")
+  details = []
+  for result in cursor:
+    temp.append(result['price'])
+    details.append('User: ')
+    try:
+      details.append(name)
+    except:
+      pass
+    details.append('Color: ')
+    details.append(result['color'])
+    details.append('Size: ')
+    details.append(result['size'])
+    details.append('Regular Price: ')
+    details.append(result['price'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('Brand: ')
+    details.append(result['brand_name'])
+    details.append('Rating: ')
+    details.append(result['rating'])
+    details.append('Type: ')
+    details.append(result['type_name'])
+  cursor.close()
+  s_price = temp[0]
+  context = dict(data = details)
+  return render_template("shoes4.html", **context)
+
+@app.route('/shoes5')
+def shoes5():
+  global s_item
+  global s_price
+  temp = []
+  s_item = 5
+  cursor = g.conn.execute("SELECT s.color, s.size, s.price, l.sale_price, l.starting_date, l.ending_date, b.brand_name, b.rating, t.type_name FROM shoes s, brands b, made_from m, types_belong_to t, sales_addto l where s.item_id = '5' and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id and s.item_id = l.item_id")
+  details = []
+  for result in cursor:
+    temp.append(result['price'])
+    details.append('User: ')
+    try:
+      details.append(name)
+    except:
+      pass
+    details.append('Color: ')
+    details.append(result['color'])
+    details.append('Size: ')
+    details.append(result['size'])
+    details.append('Regular Price: ')
+    details.append(result['price'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('Brand: ')
+    details.append(result['brand_name'])
+    details.append('Rating: ')
+    details.append(result['rating'])
+    details.append('Type: ')
+    details.append(result['type_name'])
+  cursor.close()
+  s_price = temp[0]
+  context = dict(data = details)
+  return render_template("shoes5.html", **context)
+
+@app.route('/shoes6')
+def shoes6():
+  global s_item
+  global s_price
+  temp = []
+  s_item = 6
+  cursor = g.conn.execute("SELECT s.color, s.size, s.price, l.sale_price, l.starting_date, l.ending_date, b.brand_name, b.rating, t.type_name FROM shoes s, brands b, made_from m, types_belong_to t, sales_addto l where s.item_id = '6' and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id and s.item_id = l.item_id")
+  details = []
+  for result in cursor:
+    temp.append(result['price'])
+    details.append('User: ')
+    try:
+      details.append(name)
+    except:
+      pass
+    details.append('Color: ')
+    details.append(result['color'])
+    details.append('Size: ')
+    details.append(result['size'])
+    details.append('Regular Price: ')
+    details.append(result['price'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('Brand: ')
+    details.append(result['brand_name'])
+    details.append('Rating: ')
+    details.append(result['rating'])
+    details.append('Type: ')
+    details.append(result['type_name'])
+  cursor.close()
+  s_price = temp[0]
+  context = dict(data = details)
+  return render_template("shoes6.html", **context)
+
+@app.route('/shoes7')
+def shoes7():
+  global s_item
+  global s_price
+  temp = []
+  s_item = 7
+  cursor = g.conn.execute("SELECT s.color, s.size, s.price, l.sale_price, l.starting_date, l.ending_date, b.brand_name, b.rating, t.type_name FROM shoes s, brands b, made_from m, types_belong_to t, sales_addto l where s.item_id = '7' and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id and s.item_id = l.item_id")
+  details = []
+  for result in cursor:
+    temp.append(result['price'])
+    details.append('User: ')
+    try:
+      details.append(name)
+    except:
+      pass
+    details.append('Color: ')
+    details.append(result['color'])
+    details.append('Size: ')
+    details.append(result['size'])
+    details.append('Regular Price: ')
+    details.append(result['price'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('Brand: ')
+    details.append(result['brand_name'])
+    details.append('Rating: ')
+    details.append(result['rating'])
+    details.append('Type: ')
+    details.append(result['type_name'])
+  cursor.close()
+  s_price = temp[0]
+  context = dict(data = details)
+  return render_template("shoes7.html", **context)
+
+@app.route('/shoes8')
+def shoes8():
+  global s_item
+  global s_price
+  temp = []
+  s_item = 8
+  cursor = g.conn.execute("SELECT s.color, s.size, s.price, l.sale_price, l.starting_date, l.ending_date, b.brand_name, b.rating, t.type_name FROM shoes s, brands b, made_from m, types_belong_to t, sales_addto l where s.item_id = '8' and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id and s.item_id = l.item_id")
+  details = []
+  for result in cursor:
+    temp.append(result['price'])
+    details.append('User: ')
+    try:
+      details.append(name)
+    except:
+      pass
+    details.append('Color: ')
+    details.append(result['color'])
+    details.append('Size: ')
+    details.append(result['size'])
+    details.append('Regular Price: ')
+    details.append(result['price'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('Brand: ')
+    details.append(result['brand_name'])
+    details.append('Rating: ')
+    details.append(result['rating'])
+    details.append('Type: ')
+    details.append(result['type_name'])
+  cursor.close()
+  s_price = temp[0]
+  context = dict(data = details)
+  return render_template("shoes8.html", **context)
+
+@app.route('/shoes9')
+def shoes9():
+  global s_item
+  global s_price
+  temp = []
+  s_item = 9
+  cursor = g.conn.execute("SELECT s.color, s.size, s.price, l.sale_price, l.starting_date, l.ending_date, b.brand_name, b.rating, t.type_name FROM shoes s, brands b, made_from m, types_belong_to t, sales_addto l where s.item_id = '9' and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id and s.item_id = l.item_id")
+  details = []
+  for result in cursor:
+    temp.append(result['price'])
+    details.append('User: ')
+    try:
+      details.append(name)
+    except:
+      pass
+    details.append('Color: ')
+    details.append(result['color'])
+    details.append('Size: ')
+    details.append(result['size'])
+    details.append('Regular Price: ')
+    details.append(result['price'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('Brand: ')
+    details.append(result['brand_name'])
+    details.append('Rating: ')
+    details.append(result['rating'])
+    details.append('Type: ')
+    details.append(result['type_name'])
+  cursor.close()
+  s_price = temp[0]
+  context = dict(data = details)
+  return render_template("shoes9.html", **context)
+
+@app.route('/shoes10')
+def shoes10():
+  global s_item
+  global s_price
+  temp = []
+  s_item = 10
+  cursor = g.conn.execute("SELECT s.color, s.size, s.price, l.sale_price, l.starting_date, l.ending_date, b.brand_name, b.rating, t.type_name FROM shoes s, brands b, made_from m, types_belong_to t, sales_addto l where s.item_id = 10 and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id and s.item_id = l.item_id")
+  details = []
+  for result in cursor:
+    temp.append(result['price'])
+    details.append('User: ')
+    try:
+      details.append(name)
+    except:
+      pass
+    details.append('Color: ')
+    details.append(result['color'])
+    details.append('Size: ')
+    details.append(result['size'])
+    details.append('Regular Price: ')
+    details.append(result['price'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('Brand: ')
+    details.append(result['brand_name'])
+    details.append('Rating: ')
+    details.append(result['rating'])
+    details.append('Type: ')
+    details.append(result['type_name'])
+  cursor.close()
+  s_price = temp[0]
+  context = dict(data = details)
+  return render_template("shoes10.html", **context)
+
+@app.route('/shoes11')
+def shoes11():
+  global s_item
+  global s_price
+  temp = []
+  s_item = 11
+  cursor = g.conn.execute("SELECT s.color, s.size, s.price, l.sale_price, l.starting_date, l.ending_date, b.brand_name, b.rating, t.type_name FROM shoes s, brands b, made_from m, types_belong_to t, sales_addto l where s.item_id = '11' and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id and s.item_id = l.item_id")
+  details = []
+  for result in cursor:
+    temp.append(result['price'])
+    details.append('User: ')
+    try:
+      details.append(name)
+    except:
+      pass
+    details.append('Color: ')
+    details.append(result['color'])
+    details.append('Size: ')
+    details.append(result['size'])
+    details.append('Regular Price: ')
+    details.append(result['price'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('Brand: ')
+    details.append(result['brand_name'])
+    details.append('Rating: ')
+    details.append(result['rating'])
+    details.append('Type: ')
+    details.append(result['type_name'])
+  cursor.close()
+  s_price = temp[0]
+  context = dict(data = details)
+  return render_template("shoes11.html", **context)
+
+@app.route('/shoes12')
+def shoes12():
+  global s_item
+  global s_price
+  temp = []
+  s_item = 12
+  cursor = g.conn.execute("SELECT s.color, s.size, s.price, l.sale_price, l.starting_date, l.ending_date, b.brand_name, b.rating, t.type_name FROM shoes s, brands b, made_from m, types_belong_to t, sales_addto l where s.item_id = '12' and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id and s.item_id = l.item_id")
+  details = []
+  for result in cursor:
+    temp.append(result['price'])
+    details.append('User: ')
+    try:
+      details.append(name)
+    except:
+      pass
+    details.append('Color: ')
+    details.append(result['color'])
+    details.append('Size: ')
+    details.append(result['size'])
+    details.append('Regular Price: ')
+    details.append(result['price'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('Brand: ')
+    details.append(result['brand_name'])
+    details.append('Rating: ')
+    details.append(result['rating'])
+    details.append('Type: ')
+    details.append(result['type_name'])
+  cursor.close()
+  s_price = temp[0]
+  context = dict(data = details)
+  return render_template("shoes1.html2", **context)
+
+@app.route('/addtocart')
+def addtocart():
+  try:
+    sql = 'INSERT INTO cart values (%s,%s,%s)'
+    args = (name, s_item, s_price)
+    g.conn.execute(sql, args)
+    context = dict(data1 = 'Successfully add to cart')
+  except:
+    context = dict(data1 = 'No user information detected, please log in first!')
+  return render_template("shoes1.html", **context)
+
+@app.route('/cart')
+def cart():
+  try:
+    sql = 'SELECT c.user_id, c.item_id, s.color, s.size, s.price, b.brand_name, b.rating, t.type_name FROM cart c, shoes s, brands b, made_from m, types_belong_to t where c.user_id = %s and c.item_id = s.item_id and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id' 
+    args = (name)
+    cursor = g.conn.execute(sql, args)
+    details = []
+    for result in cursor:
+      details.append('User: ')
+      details.append(result['user_id'])
+      details.append('Item id: ')
+      details.append(result['item_id'])
+      details.append('Color: ')
+      details.append(result['color'])
+      details.append('Size: ')
+      details.append(result['size'])
+      details.append('Regular Price: ')
+      details.append(result['price'])
+      details.append('Brand: ')
+      details.append(result['brand_name'])
+      details.append('Rating: ')
+      details.append(result['rating'])
+      details.append('Type: ')
+      details.append(result['type_name'])
+    cursor.close()
+    context = dict(data = details)
+  except:
+    context = dict(data1 = 'No user information detected, please log in first!')
+  return render_template("cart.html", **context)
+ 
+@app.route('/emptycart')
+def emptycart():
+  sql4 = 'delete from cart where user_id = %s'
+  arg4 = (name)
+  g.conn.execute(sql4, arg4)
+
+@app.route('/sale')
+def sale():
+  cursor = g.conn.execute("SELECT item_id, sale_price, starting_date, ending_date FROM sales_addto")
+  details = []
+  for result in cursor:
+    details.append('Item: ')
+    details.append(result['item_id'])
+    details.append('Sale Price: ')
+    details.append(result['sale_price'])
+    details.append('Sale Starting at: ')
+    details.append(result['starting_date'])
+    details.append('Sale Ending at: ')
+    details.append(result['ending_date'])
+    details.append('************************************************')
+  cursor.close()
+  context = dict(data = details)
+  return render_template("sale.html", **context)
+
+@app.route('/order')
+def order():
+  try:
+    sql = 'SELECT p.user_id, p.order_id, d.item_id, d.qty, p.date, p.total_cost, o.delivery_date, o.shipping_status, o.address from pay p, orders o, details d where p.user_id = %s and p.order_id = o.order_id and o.order_id = d.order_id'
+    args = name
+    cursor = g.conn.execute(sql, args)
+    details = []
+    for result in cursor:
+      details.append('User: ')
+      details.append(result['user_id'])
+      details.append('Order Number: ')
+      details.append(result['order_id'])
+      details.append('Contain item: ')
+      details.append(result['item_id'])
+      details.append('Quantity: ')
+      details.append(result['qty'])
+      details.append('Order Date: ')
+      details.append(result['date'])
+      details.append('Total Price: ')
+      details.append(result['total_cost'])
+      details.append('Delivery Date: ')
+      details.append(result['delivery_date'])
+      details.append('Shipping  Status: ')
+      details.append(result['shipping_status'])
+      details.append('Address: ')
+      details.append(result['address'])
+    cursor.close()
+    context = dict(data = details)
+  except:
+    context = dict(data1 = 'No user information detected, please log in first!')
+  return render_template("order.html", **context)
+
+@app.route('/addtowishlist')
+def addtowishlist():
+  try:
+    sql = 'INSERT INTO wishlists values (%s,%s)'
+    args = (name, s_item)
+    g.conn.execute(sql, args)
+    context = dict(data1 = 'Successfully add to wishlist')
+  except:
+    context = dict(data1 = 'No user information detected, please log in first!')
+  return render_template("shoes1.html", **context)
+
+@app.route('/wishlist')
+def wishlist():
+  try:
+    sql = 'SELECT w.user_id, w.item_id, s.color, s.size, s.price, b.brand_name, b.rating, t.type_name FROM wishlists w, shoes s, brands b, made_from m, types_belong_to t where w.user_id = %s and w.item_id = s.item_id and b.bid = m.bid and s.item_id = m.item_id and s.item_id = t.item_id' 
+    args = (name)
+    cursor = g.conn.execute(sql, args)
+    details = []
+    for result in cursor:
+      details.append('User: ')
+      details.append(result['user_id'])
+      details.append('Item id: ')
+      details.append(result['item_id'])
+      details.append('Color: ')
+      details.append(result['color'])
+      details.append('Size: ')
+      details.append(result['size'])
+      details.append('Regular Price: ')
+      details.append(result['price'])
+      details.append('Brand: ')
+      details.append(result['brand_name'])
+      details.append('Rating: ')
+      details.append(result['rating'])
+      details.append('Type: ')
+      details.append(result['type_name'])
+    cursor.close()
+    context = dict(data = details)
+  except:
+    context = dict(data1 = 'No user information detected, please log in first!')
+  return render_template("wishlist.html", **context)
+
+
 @app.route('/another')
 def another():
   return render_template("anotherfile.html")
 
+@app.route('/wrong')
+def wrong():
+  return render_template("wrong.html")
+
+@app.route('/checkout')
+def checkout():
+  total=[]
+  totals = []
+  total_price = 0
+  sql = 'SELECT price from cart where user_id = %s'
+  args = (name)
+  cursor = g.conn.execute(sql, args)
+  for result in cursor:
+    total.append(result['price'])
+  cursor.close()
+  for i in range(0, len(total)):
+    total_price = total_price + total[i]
+  totals.append('Total Price is :') 
+  totals.append(total_price)
+  context=dict(data = totals)
+  return render_template("confirm.html", **context)
+
+@app.route('/confirm', methods=['POST'])
+def confirm():
+  try:
+    itemid=[]
+    quantity=[]
+    lastorder=[]
+    total=[]
+    totals = []
+    total_price = 0
+    sql = 'SELECT price from cart where user_id = %s'
+    args = (name)
+    cursor = g.conn.execute(sql, args)
+    for result in cursor:
+      total.append(result['price'])
+    cursor.close()
+    for i in range(0, len(total)):
+      total_price = total_price + total[i]
+
+    cursor1 = g.conn.execute("SELECT order_id from orders order by order_id desc limit 1")
+    for result in cursor1:
+      lastorder.append(result['order_id'])
+    cursor1.close()
+    neworder = lastorder[0] + 1
+    deliverydate = datetime.datetime.now()
+    print deliverydate
+    shippingstatus = 'ready for ship'
+    address = request.form['address']
+    print address
+    sql = 'INSERT INTO orders values (%s,%s,%s,%s)'
+    args = (neworder, deliverydate, shippingstatus, address)
+    g.conn.execute(sql, args)
+    sql1 = 'INSERT INTO pay values (%s,%s,%s,%s)'
+    args1 = (name, neworder, deliverydate, total_price)
+    g.conn.execute(sql1, args1)
+
+
+    itemiddd = []
+    quann = []
+    sql3 = 'SELECT item_id, count(*) from cart where user_id = %s group by item_id'
+    args3 = (name)
+    cursor2 = g.conn.execute(sql3, args3)
+    for result in cursor2:
+      itemiddd.append(result['item_id'])
+      quann.append(result['count'])
+    cursor2.close
+
+    for i in range(0, len(itemiddd)):
+      print itemiddd[i],quann[i]
+      sql2 = 'INSERT INTO details values (%s,%s,%s)'
+      args2 = (neworder, itemiddd[i], quann[i])
+      g.conn.execute(sql2, args2)
+
+    #clean the cart
+    sql4 = 'delete from cart where user_id = %s'
+    arg4 = (name)
+    g.conn.execute(sql4, arg4)
+
+    context=dict(data1="Order Placed")
+    return render_template("confirm.html", **context)
+  except:
+    pass
+
+@app.route('/signup')
+def signup():
+  return render_template("adduser.html")
 
 # Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  name = request.form['name']
-  g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
-  return redirect('/')
+@app.route('/adduser', methods=['POST'])
+def adduser():
+  try:
+    user = request.form['user']
+    password = request.form['password']
+    email = request.form['email']
+    first = request.form['first']
+    last = request.form['last']
+    age = request.form['age']
+    g.conn.execute("INSERT INTO customers values ('%s','%s','%s','%s','%s','%s')" %(user,password,email,first,last,age))
+    context = dict(data = 'Successfully sign up, please log in')
+    return render_template("index.html", **context)
+  except:
+    context = dict(data = 'Please recheck the sign up requirements')
+    return render_template("adduser.html", **context)
 
-
-@app.route('/login')
+@app.route('/login', methods=['POST'])
 def login():
-    abort(401)
-    this_is_never_executed()
+  global name
+  cursor = g.conn.execute("SELECT user_id FROM customers")
+  ids = []
+  for result in cursor:
+    ids.append(result['user_id'])  # can also be accessed using result[0]
+  cursor.close()
+
+  cursor = g.conn.execute("SELECT password FROM customers")
+  psw = []
+  for result in cursor:
+    psw.append(result['password'])  # can also be accessed using result[0]
+  cursor.close()
+  
+  name = request.form['u_id']
+  passW= request.form['passw']
+  print passW
+
+
+  for i in ids:
+    if name in i :
+      for j in psw:
+        if passW in j:
+          context = dict (data = name)
+          return render_template("index.html", **context)
+  context = dict(data = 'Wrong username or password')
+  return render_template("index.html", **context)
+
 
 
 if __name__ == "__main__":
